@@ -6,6 +6,7 @@ rando = 0
 pos = []
 
 
+
 class Scoreboard:
     def __init__(self, screen, x, y):
         self.x = x
@@ -17,6 +18,8 @@ class Scoreboard:
         caption1 = self.font.render(f"Score: {self.score} ", True, (255, 255, 255))
 
         self.screen.blit(caption1, (5, 5))
+    # def music(self):
+
 class Blocks:
     def __init__(self, screen, object_speed):
         self.screen = screen
@@ -169,6 +172,13 @@ class Obstacle:
 
 def main():
     pygame.init()
+    pygame.mixer.music.load("Sonic Forces Boost Sound Effect.mp3")
+    boost_sounds = pygame.mixer.Sound("Sonic Forces Boost Sound Effect.mp3")
+    pygame.mixer.music.load("8- bit explosion sound effect [SFX].mp3")
+    explosion_music = pygame.mixer.Sound("8- bit explosion sound effect [SFX].mp3")
+    main_music = pygame.mixer.Sound("Dj Nate - Club Step.mp3")
+    pygame.mixer.music.load("Dj Nate - Club Step.mp3")
+    main_music.play()
     rando = random.randrange(0, 4)
     pos = [1, 1, 1, 1]
     pos[rando] = 0
@@ -194,11 +204,31 @@ def main():
     road3 = Lanes(screen, 254)
     road4 = Lanes(screen, 381)
     scoreboard = Scoreboard(screen, 5, 5)
+    font1 = pygame.font.SysFont(None, 50)
+    caption1 = font1.render(f"GAME OVER", True, (255, 255, 255))
+    font2 = pygame.font.SysFont(None, 30)
+    caption2 = font2.render(f"Press SPACE to Restart!", True, (255, 255, 255))
 
     while True:
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                pressed_keys = pygame.key.get_pressed()
+                if pressed_keys[pygame.K_SPACE]:
+                    rubble.y = 0 - rubble.rubble_image.get_height()
+                    rubble2.y = 0 - rubble.rubble_image.get_height()
+                    rubble3.y = 0 - rubble.rubble_image.get_height()
+                    boost1.y = 0 - rubble.rubble_image.get_height()
+                    scoreboard.score = 0
+                    speed = 1
+                    rubble3.changeSpeed(speed)
+                    rubble2.changeSpeed(speed)
+                    rubble.changeSpeed(speed)
+                    boost1.changeSpeed(speed)
+                    line1.changeSpeed(speed + 2)
+                    game_over = False
             if game_over == False:
                 if event.type == pygame.KEYDOWN:
                     pressed_keys = pygame.key.get_pressed()
@@ -213,10 +243,15 @@ def main():
                         if counter > 3:
                             counter = 3
                         car.move(counter)
+
         if game_over == True:
             explosion_image = pygame.image.load("explosionn.png")
             screen.blit(explosion_image, (car.x - 50, car.y - 63))
+            screen.blit(caption1, (141, screen.get_width() / 2))
+            screen.blit(caption2, (141, screen.get_height() / 2))
+
             pygame.display.update()
+
             continue
 
         if line1.off_screen():
@@ -255,8 +290,10 @@ def main():
 
         car.draw()
         if car.hit_by_rubble(rubble) or car.hit_by_rubble(rubble2) or car.hit_by_rubble(rubble3):
+            explosion_music.play()
             game_over = True
         if boost1.off_screen():
+            boost_sounds.play()
             boost1.y = 0 - rubble.rubble_image.get_height()
         if rubble.off_screen():
             rubble.y = 0 - rubble.rubble_image.get_height()

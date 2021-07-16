@@ -155,6 +155,7 @@ class Game:
              #   self.gameStatus = "Dealer Win"
              #   self.loseOne()
              #   self.loseTwo()
+
             if self.AIScore > 21:
                 if self.playerScore <= 21:
                     self.winOne()
@@ -451,9 +452,11 @@ def main():
     music.play(-1)
     while True:
         if ViewController.game.gameOverOne and ViewController.game.gameOverTwo:
-            screen.fill((0, 0, 0))
-            screen.blit(bigFont.render("Game Over", True, (255, 255, 255)), (300, 275))
-            screen.blit(bigFont.render("Click to play again", True, (255, 255, 255)), (screenWidth /2 - 150, 400))
+            game_over = bigFont.render("Game Over", True, (255, 255, 255))
+            play_again = bigFont.render("Click to play again", True, (255, 255, 255))
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(screenWidth / 2 - 225, screenHeight / 2 - 50, 450, 200))
+            screen.blit(game_over, (screenWidth / 2 - game_over.get_width() / 2, screenHeight / 2))
+            screen.blit(play_again, (screenWidth /2 - play_again.get_width() / 2, screenHeight / 2 + play_again.get_height() + 10))
             pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

@@ -2,6 +2,21 @@ import pygame
 import sys
 import random
 import time
+import math
+
+
+def draw_section_lines(screen):
+    middle_point = (screen.get_width() / 2, screen.get_height() / 2)
+    r = 210
+    points = [middle_point]
+    for k in range(6):
+        angle = 60 * k
+        x = middle_point[0] + r * math.cos(angle / 180 * math.pi)
+        y = middle_point[1] + r * math.sin(angle / 180 * math.pi)
+        points.append((x, y))
+        points.append(middle_point)
+    pygame.draw.lines(screen, (0, 0, 0), True, points, 5)
+
 
 class Word_Generator:
     def __init__(self):
@@ -31,9 +46,6 @@ class Word_Generator:
 
 class Arrow:
     def __init__(self, screen, game):
-        """
-        :type game: Game
-        """
         self.screen = screen
         self.arrow_image = pygame.image.load("tinyarrow.PNG")
         self.game = game
@@ -72,6 +84,14 @@ class Life_Display:
             self.screen.blit(self.life_lost_image, (475, 0))
         if self.game.lives < 1:
             self.screen.blit(self.life_lost_image, (550, 0))
+        if self.game.lives >= 4:
+            self.screen.blit(self.life_image, (326, 0))
+        if self.game.lives >= 5:
+            self.screen.blit(self.life_image, (251, 0))
+        if self.game.lives >= 6:
+            self.screen.blit(self.life_image, (176, 0))
+        if self.game.lives >= 7:
+            self.screen.blit(self.life_image, (101, 0))
 
 
 class Timer_Display:
@@ -138,36 +158,50 @@ class Display_Words:
             self.screen.blit(caption0, (self.screen.get_width() / 2 - caption0.get_width() / 2, 65))
         else:
             self.screen.blit(self.star_image, (self.screen.get_width() / 2 - 20, 35))
-
+            caption0 = self.font.render(self.game.display_words[0].replace("_", self.game.missing_letters[0]), True, (0, 0, 0))
+            self.screen.blit(caption0, (self.screen.get_width() / 2 - caption0.get_width() / 2, 65))
         if self.game.is_card_active[1]:
             caption1 = self.font.render(self.game.display_words[1], True, (0, 0, 0))
             self.screen.blit(caption1, (540 - caption1.get_width() / 2, 160))
         else:
             self.screen.blit(self.star_image, (540, 160))
-
+            caption1 = self.font.render(self.game.display_words[1].replace("_", self.game.missing_letters[1]), True,
+                                        (0, 0, 0))
+            self.screen.blit(caption1, (540 - caption1.get_width() / 2, 160))
         if self.game.is_card_active[2]:
             caption2 = self.font.render(self.game.display_words[2], True, (0, 0, 0))
             self.screen.blit(caption2, (540 - caption2.get_width() / 2, 350))
         else:
             self.screen.blit(self.star_image, (540, 350))
-
+            caption2 = self.font.render(self.game.display_words[2].replace("_", self.game.missing_letters[2]), True,
+                                        (0, 0, 0))
+            self.screen.blit(caption2, (540 - caption2.get_width() / 2, 350))
         if self.game.is_card_active[3]:
             caption3 = self.font.render(self.game.display_words[3], True, (0, 0, 0))
             self.screen.blit(caption3, (self.screen.get_width() / 2 - caption3.get_width() / 2, 500))
         else:
             self.screen.blit(self.star_image, (self.screen.get_width() / 2 - 20, 500))
-
+            caption3 = self.font.render(self.game.display_words[3].replace("_", self.game.missing_letters[3]), True,
+                                        (0, 0, 0))
+            self.screen.blit(caption3, (self.screen.get_width() / 2 - caption3.get_width() / 2, 500))
         if self.game.is_card_active[4]:
             caption4 = self.font.render(self.game.display_words[4], True, (0, 0, 0))
             self.screen.blit(caption4, (100 - caption4.get_width() / 2, 350))
         else:
             self.screen.blit(self.star_image, (100, 350))
-
+            caption4 = self.font.render(self.game.display_words[4].replace("_", self.game.missing_letters[4]), True,
+                                        (0, 0, 0))
+            self.screen.blit(caption4, (100 - caption4.get_width() / 2, 350))
         if self.game.is_card_active[5]:
             caption5 = self.font.render(self.game.display_words[5], True, (0, 0, 0))
             self.screen.blit(caption5, (100 - caption5.get_width() / 2, 160))
         else:
             self.screen.blit(self.star_image, (100, 160))
+            caption5 = self.font.render(self.game.display_words[5].replace("_", self.game.missing_letters[5]), True,
+                                        (0, 0, 0))
+            self.screen.blit(caption5, (100 - caption5.get_width() / 2, 160))
+
+
 
 
 class Game:
@@ -177,11 +211,10 @@ class Game:
         self.feedback_message = ""
         self.word_generator = Word_Generator()
         self.missing_letters, self.display_words = self.word_generator.generate_words(6)
-        self.active_index = random.randrange(0, 6)
         self.is_card_active = [True, True, True, True, True, True]
+        self.select_next_index()
         self.round_start_time = time.time()
-        self.round_durations = [120, 90, 60, 45, 30, 15]
-        self.final_word = "Bob"
+        self.round_durations = [90, 60, 45, 30, 20, 15, 10]
         self.angle = 0
 
     def reset(self):
@@ -189,13 +222,14 @@ class Game:
         self.lives = 3
         self.feedback_message = ""
         self.missing_letters, self.display_words = self.word_generator.generate_words(6)
-        self.active_index = random.randrange(0, 6)
         self.is_card_active = [True, True, True, True, True, True]
+        self.select_next_index()
         self.round_start_time = time.time()
         self.angle = 0
 
     def start_next_round(self):
         self.round = self.round + 1
+        self.lives = self.lives + 1
         self.round_start_time = time.time()
         self.missing_letters, self.display_words = self.word_generator.generate_words(6)
         self.active_index = random.randrange(0, 6)
@@ -221,6 +255,7 @@ class Game:
         f"Missing Letters: {self.missing_letters} \nDisplay Words: {self.display_words} \nActive Index: {self.active_index} Is card active: {self.is_card_active}\n"
 
     def select_next_index(self):
+        self.active_index = random.randrange(0, 6)
         while True:
             if self.is_card_active[self.active_index]:
                 break
@@ -229,10 +264,10 @@ class Game:
 
     def guess(self, index, letter):
         sparkle_sparkle_sound = pygame.mixer.Sound("Level_XP Sounds (Minecraft) - Sound Effects for editing.wav")
-        oof_sound = pygame.mixer.Sound("Minecraft Damage (Oof) - Sound Effect (HD).wav")
+        # oof_sound = pygame.mixer.Sound("Minecraft Damage (Oof) - Sound Effect (HD).wav")
         get_hit_sound = pygame.mixer.Sound("Minecraft hit sound - 1080p60fps.wav")
 
-        print(f"The User Guessed: index {index} letter {letter}")
+        # print(f"The User Guessed: index {index} letter {letter}")
         if index == self.active_index and letter == self.missing_letters[self.active_index]:
             self.is_card_active[index] = False
             if self.is_round_over():
@@ -287,8 +322,6 @@ class Feedback_Display:
         caption = self.font.render(self.game.feedback_message, True, (0, 150, 150))
         self.screen.blit(caption, (self.screen.get_width() / 2 - caption.get_width()/2, 550))
 
-
-
 def main():
     pygame.init()
     # turn on pygame
@@ -317,8 +350,6 @@ def main():
     game = Game()
     arrow = Arrow(screen, game)
     life_display = Life_Display(screen, game)
-    print(game)
-    font = pygame.font.Font(None, 25)
     round = Round_Display(screen, game)
     feedback_display = Feedback_Display(screen, game)
     timer = Timer_Display(screen, game)
@@ -329,11 +360,16 @@ def main():
     # set the frame rate
     exploding_sound = pygame.mixer.Sound("TNT explosion.wav")
     # load the exploding TNT MC sound
+    background_music = pygame.mixer.music.load("Mission Impossible Theme - Note Block Edition.wav")
+    # load the background music
 
     while True:
         for event in pygame.event.get():
             pressed_keys = pygame.key.get_pressed()
             # checking for pressed keys
+            if event.type == pygame.QUIT:
+                sys.exit()
+
             if event.type == pygame.QUIT:
                 sys.exit()
                 # so that you can exit the game
@@ -349,25 +385,33 @@ def main():
                         exploding_sound.play()
                     time.sleep(.5)
                     # makes the arrow pause for 0.5 seconds after you select a letter
-                    print(game)
+                    # print(game)
+                    if pressed_keys[pygame.K_SPACE]:
+                        game.guess(game.active_index, game.missing_letters[game.active_index])
 
         screen.fill((255, 255, 255))
+        draw_section_lines(screen)
+
         if game.lives <= 0:
             screen.blit(gameover_image, (0, 0))
             round.draw()
             final_word_display.draw()
             pygame.display.update()
+
             continue
 
         screen.blit(circle_image, (40, 60))
         arrow.move()
         arrow.draw()
-        screen.blit(bomb_image, (170, 160))
+        screen.blit(bomb_image, (180, 160))
         round.draw()
         feedback_display.draw()
         timer.draw()
         display_words.draw()
         life_display.draw()
+
+
+
         pygame.display.update()
 
 
